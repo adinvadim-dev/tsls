@@ -206,7 +206,8 @@ test("tailnet mixed OS/offline/unknown/null DNS; every peer retained, strict acc
       .every(
         (c) =>
           c.args.includes("BatchMode=yes") &&
-          c.args.includes("StrictHostKeyChecking=yes"),
+          c.args.includes("StrictHostKeyChecking=yes") &&
+          c.args.includes("UpdateHostKeys=no"),
       ),
   );
   assert.doesNotMatch(r.stdout + r.stderr, /PRIVATE_ERROR/);

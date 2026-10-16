@@ -80,7 +80,7 @@ TSLS_TIMEOUT=3 tsls dev-vm
 
 Config path precedence: `--config` > `TSLS_CONFIG` > XDG/default file. Only an absent implicit default file enables discovery. Missing explicitly selected files, unreadable files and malformed configs produce usage errors, rather than silently changing the host set. Timing flags > `TSLS_TIMEOUT`/`TSLS_CONCURRENCY` > config > defaults. No project config is trusted. Snapshots never create a config file.
 
-Set up and verify SSH trust/access yourself. BatchMode and StrictHostKeyChecking remain enabled. Askpass/display settings are suppressed for SSH descendants including ProxyJump, while the existing agent socket and caller environment are preserved. Your SSH config is trusted executable configuration, including any ProxyCommand/Match exec you have defined. Passwords/private keys do not belong in tsls config.
+Set up and verify SSH trust/access yourself. BatchMode and StrictHostKeyChecking remain enabled; UpdateHostKeys is disabled to preserve known_hosts. Askpass/display settings are suppressed for SSH descendants including ProxyJump, while the existing agent socket and caller environment are preserved. Your SSH config is trusted executable configuration, including any ProxyCommand/Match exec you have defined. Passwords/private keys do not belong in tsls config.
 
 ## Bounds and coverage
 

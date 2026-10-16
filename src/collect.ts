@@ -11,6 +11,8 @@ export function sshArgs(target: string, timeout: number): string[] {
     "-o",
     "StrictHostKeyChecking=yes",
     "-o",
+    "UpdateHostKeys=no",
+    "-o",
     "ConnectionAttempts=1",
     "-o",
     `ConnectTimeout=${Math.ceil(timeout)}`,

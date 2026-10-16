@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -48,6 +55,25 @@ assert.equal(
   run(bin, ["--version"]).trim(),
   JSON.parse(readFileSync("package.json", "utf8")).version,
 );
+const cleanHome = join(temp, "new-user");
+const cleanBin = join(temp, "isolated-bin");
+mkdirSync(cleanHome);
+mkdirSync(cleanBin);
+symlinkSync(process.execPath, join(cleanBin, "node"));
+const cleanEnv = {
+  ...process.env,
+  HOME: cleanHome,
+  XDG_CONFIG_HOME: join(cleanHome, ".config"),
+  PATH: cleanBin,
+};
+for (const key of Object.keys(cleanEnv))
+  if (key.startsWith("TSLS_") || key === "SSH_AUTH_SOCK") delete cleanEnv[key];
+const firstRun = JSON.parse(run(bin, ["--json"], temp, cleanEnv));
+assert.equal(firstRun.schemaVersion, 2);
+assert.equal(firstRun.discovery.source, "local");
+assert.equal(firstRun.hosts.length, 1);
+assert.equal(firstRun.hosts[0].status, "ok");
+assert.equal(existsSync(join(cleanHome, ".config")), false);
 const config = join(temp, "config.json");
 writeFileSync(
   config,

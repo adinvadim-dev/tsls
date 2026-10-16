@@ -55,7 +55,7 @@ tsls --discover
 tsls --discover --json
 ```
 
-`--discover` ignores all tsls config, including `TSLS_CONFIG`, and cannot be combined with `--config`. It still uses your standard OpenSSH configuration. Existing literal SSH aliases from user/system config and Includes are resolved with bounded `ssh -G` calls; a matching effective HostName can map a discovered node to your existing alias/user/identity/ProxyJump. Otherwise the validated node destination is passed to OpenSSH, which owns login/identity defaults. tsls never derives a Unix user from Tailscale ownership or guesses one from the OS. It does not retry with guessed accounts.
+`--discover` ignores all tsls config, including `TSLS_CONFIG`, and cannot be combined with `--config`. It still uses your standard OpenSSH configuration. Existing literal SSH aliases from user/system config and Includes are resolved with bounded `ssh -G` calls; a matching effective HostName can map a discovered node to your existing alias/user/identity/ProxyJump. Otherwise a validated Tailscale IP is preferred over DNS for direct access, so disabled MagicDNS does not prevent collection. The destination is passed to OpenSSH, which owns login/identity defaults. tsls never derives a Unix user from Tailscale ownership or guesses one from the OS. It does not retry with guessed accounts.
 
 For an explicit set, `tsls init` optionally creates `~/.config/tsls/config.json`, or `$XDG_CONFIG_HOME/tsls/config.json`, with only local `laptop`. It never overwrites a file. Creating that file opts into an explicit set for subsequent bare calls. Edit it to add your machines. These are fictional targets:
 

@@ -245,7 +245,9 @@ test("same names disambiguate without duplicating Self ID", () => {
   assert.equal(new Set(s.hosts.map((h) => h.peerId)).size, 3);
 });
 test("existing SSH aliases and Includes map independently of OS or tailnet owner", () => {
-  const f = fixture(status([node("a", "builder")]));
+  const f = fixture(
+    status([{ ...node("a", "builder"), TailscaleIPs: ["192.0.2.24"] }]),
+  );
   mkdirSync(join(f.home, ".ssh", "conf.d"));
   writeFileSync(join(f.home, ".ssh/config"), "Include conf.d/*.conf\n");
   writeFileSync(
@@ -456,4 +458,19 @@ test("reserved init names select metrics without writing configuration", () => {
     assert.equal(selected.s.hosts[0].status, "ok");
     assert.equal(existsSync(join(f.home, ".config")), false);
   }
+});
+
+test("direct discovery uses Tailscale IP without depending on MagicDNS", () => {
+  const f = fixture(
+    status([{ ...node("a", "unresolvable"), TailscaleIPs: ["192.0.2.23"] }]),
+  );
+  const { s } = json(f);
+  assert.equal(s.hosts[1].status, "ok");
+  const probes = calls(f).filter(
+    (c) => c.event === "start" && !c.args.includes("-G"),
+  );
+  assert.deepEqual(
+    probes.map((c) => c.target),
+    ["192.0.2.23"],
+  );
 });

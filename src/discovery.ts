@@ -65,7 +65,7 @@ function parsePeer(value: unknown): Peer {
         : null,
     destinations: [
       ...new Set(
-        [dns, ...ips, normalized(hostName)].filter(
+        [...ips, dns, normalized(hostName)].filter(
           (s) => safeAlias(s) || isIP(s) !== 0,
         ),
       ),

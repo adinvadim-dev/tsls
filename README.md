@@ -21,7 +21,7 @@ pnpm dlx @adinvadim/tsls --help
 bunx @adinvadim/tsls --help
 ```
 
-Only the development build needs TypeScript. Published JavaScript runs on Node; Bun is optional. macOS and Linux clients and hosts are supported. Windows clients are not yet supported. There are no standalone native binaries or Homebrew formula yet. [GitHub Releases](https://github.com/adinvadim-dev/tsls/releases) also provide an npm tarball and SHA256SUMS for offline installation. Use that verified tarball if npm metadata is still propagating immediately after a new release. Verify `shasum -a 256 -c SHA256SUMS` in the download directory, then `npm install -g ./adinvadim-tsls-0.1.0.tgz`. Checksums detect download corruption; they are not a signature from an independent trust root. Installers never silently overwrite an existing unrelated `tsls` command: check `command -v tsls` before installing.
+Only the development build needs TypeScript. Published JavaScript runs on Node; Bun is optional. macOS and Linux clients and hosts are supported. Windows clients are not yet supported. There are no standalone native binaries or Homebrew formula yet. [GitHub Releases](https://github.com/adinvadim-dev/tsls/releases) also provide an npm tarball and SHA256SUMS for offline installation. Use that verified tarball if npm metadata is still propagating immediately after a new release. Verify `shasum -a 256 -c SHA256SUMS` in the download directory, then `npm install -g ./adinvadim-tsls-0.1.1.tgz`. Checksums detect download corruption; they are not a signature from an independent trust root. Installers never silently overwrite an existing unrelated `tsls` command: check `command -v tsls` before installing.
 
 ## Configure once
 

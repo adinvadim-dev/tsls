@@ -1,6 +1,6 @@
 {
   "name": "@adinvadim/tsls",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Free RAM and available disk across your macOS and Linux machines, over SSH.",
   "type": "module",
   "bin": {

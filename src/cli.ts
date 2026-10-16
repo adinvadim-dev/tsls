@@ -7,7 +7,7 @@ import { bounded, defaultPath, loadConfig } from "./config.js";
 import { UsageError } from "./model.js";
 import { renderHuman, renderPlain } from "./output.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 const HELP = `tsls ${VERSION} — free RAM and available disk across your machines
 
 Usage: tsls [host-label...] [options]
@@ -110,10 +110,17 @@ async function main(): Promise<number> {
         flag: "wx",
         mode: 0o600,
       });
-    } catch {
-      throw new UsageError(
-        "Cannot create config; an existing file is never overwritten",
-      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "EEXIST"
+      ) {
+        throw new UsageError(
+          "Cannot create config; an existing file is never overwritten",
+        );
+      }
+      throw error;
     }
     process.stderr.write(
       `Created ${configPath}. Run tsls or add SSH hosts using the README example.\n`,

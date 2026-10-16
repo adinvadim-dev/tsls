@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.1.1 Unreleased
+## 0.1.1
+
+- Classify config initialization write failures as runtime errors; reserve the overwrite warning and usage exit code for existing config files.
 
 ## 0.1.0
 

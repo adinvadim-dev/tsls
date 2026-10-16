@@ -3,6 +3,7 @@ import { spawn, spawnSync } from "node:child_process";
 import {
   chmodSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   writeFileSync,
@@ -195,6 +196,20 @@ test("init creates private local-only config; repeat never overwrites", () => {
   assert.equal(JSON.parse(before).hosts[0].transport, "local");
   assert.equal(run(["init", "--config", path]).status, 2);
   assert.equal(readFileSync(path, "utf8"), before);
+});
+test("init treats an unwritable config directory as runtime failure", () => {
+  const directory = join(dir, "readonly");
+  mkdirSync(directory);
+  chmodSync(directory, 0o500);
+  try {
+    const path = join(directory, "config.json");
+    const r = run(["init", "--config", path]);
+    assert.equal(r.status, 1);
+    assert.doesNotMatch(r.stderr, /never overwritten/);
+    assert.equal(existsSync(path), false);
+  } finally {
+    chmodSync(directory, 0o700);
+  }
 });
 test("config is read-only unless init", () => {
   const path = join(dir, "absent.json");

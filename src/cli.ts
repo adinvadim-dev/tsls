@@ -35,7 +35,7 @@ Options:
   --discover                 Ignore tsls config; use Tailscale discovery
   --strict                   Require complete coverage
   --timeout SECONDS          Per-host budget, integer 1–120 (default 5)
-  --concurrency COUNT        Parallel probes, integer 1–32 (default 4)
+  --concurrency COUNT        Parallel probes, integer 1–32 (default 8)
   --json                     Machine-readable schemaVersion: 2
   --plain                    Stable TSV with a header
   --no-color                 Disable color (output currently uses no ANSI)
@@ -56,7 +56,7 @@ Docs: https://github.com/adinvadim-dev/tsls#readme
 const SAMPLE = {
   version: 1,
   timeout: 5,
-  concurrency: 4,
+  concurrency: 8,
   hosts: [{ label: "laptop", transport: "local" }],
 };
 function integer(
@@ -163,7 +163,7 @@ async function main(): Promise<number> {
     typeof values.concurrency === "string"
       ? values.concurrency
       : process.env.TSLS_CONCURRENCY,
-    config?.concurrency ?? 4,
+    config?.concurrency ?? 8,
     "concurrency",
     32,
   );

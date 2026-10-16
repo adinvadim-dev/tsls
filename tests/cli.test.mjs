@@ -27,6 +27,7 @@ process.stdin.resume();
 if(target==='slow') { const c=require('child_process').spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'}); fs.writeFileSync(process.env.TSLS_TEST_CHILD,String(c.pid)); setInterval(()=>{},1000); }
 else if(target==='huge') { process.stdout.write('x'.repeat(300000)); }
 else if(target==='key') { process.stderr.write('REMOTE HOST IDENTIFICATION HAS CHANGED SECRET_SENTINEL');process.exitCode=255; }
+else if(target==='keepalive') {process.stderr.write('Timeout, server demo not responding.');process.exitCode=255;}
 else if(target==='auth') {process.stderr.write('Permission denied SECRET_SENTINEL');process.exitCode=255;}
 else if(target==='offline') {process.stderr.write('Connection refused SECRET_SENTINEL');process.exitCode=255;}
 else {setTimeout(()=>{process.stdout.write(${JSON.stringify(linux)}); fs.appendFileSync(process.env.TSLS_TEST_TRACE,JSON.stringify({event:'end',target,time:Date.now()})+'\\n');},100);}
@@ -114,6 +115,14 @@ test("JSON partial success, offline=null and stderr privacy", () => {
     assert.ok(h.durationMs >= 0);
   }
   assert.doesNotMatch(r.stdout + r.stderr, /SECRET_SENTINEL/);
+});
+test("SSH keepalive timeout remains offline in versioned output", () => {
+  const r = run(["--config", config(["keepalive"]), "--json"]);
+  assert.equal(r.status, 1);
+  const host = JSON.parse(r.stdout).hosts[0];
+  assert.equal(host.status, "offline");
+  assert.equal(host.error.code, "timeout");
+  assert.equal(host.metrics, null);
 });
 test("plain is stable TSV and NO_COLOR is respected", () => {
   const r = run(["--config", config(["ok"]), "--plain", "--no-color"], {

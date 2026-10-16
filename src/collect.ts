@@ -25,6 +25,8 @@ export function sshArgs(target: string, timeout: number): string[] {
   ];
 }
 function transportError(stderr: string): ProbeError {
+  if (/Timeout, server .* not responding\./i.test(stderr))
+    return new ProbeError("timeout", "SSH server stopped responding");
   if (
     /host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(
       stderr,

@@ -1,0 +1,43 @@
+{
+  "name": "@adinvadim/tsls",
+  "version": "0.1.0",
+  "description": "Free RAM and available disk across your macOS and Linux machines, over SSH.",
+  "type": "module",
+  "bin": {
+    "tsls": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs/cli.md",
+    "docs/assets/hero.svg"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adinvadim-dev/tsls.git"
+  },
+  "bugs": "https://github.com/adinvadim-dev/tsls/issues",
+  "homepage": "https://github.com/adinvadim-dev/tsls#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "check": "npm run typecheck && npm run lint && npm test && node scripts/pack-smoke.mjs",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  }
+}

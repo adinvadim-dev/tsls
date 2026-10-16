@@ -1,0 +1,12 @@
+__TSLS_OS__
+Linux
+__TSLS_MEM__
+MemTotal:       8388608 kB
+MemFree:        1048576 kB
+MemAvailable:   4194304 kB
+SwapTotal:      2097152 kB
+SwapFree:       1048576 kB
+__TSLS_DISK__
+Filesystem     1024-blocks     Used Available Capacity Mounted on
+/dev/demo       167772160 100000000  67772160 60% /
+__TSLS_END__

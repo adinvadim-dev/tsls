@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.1.2 Unreleased
+
 ## 0.1.1
 
 - Suppress SSH credential dialogs throughout ProxyJump subprocesses, including inherited askpass/display settings.

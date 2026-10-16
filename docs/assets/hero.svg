@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="t d">
+  <title id="t">tsls: RAM and disk. Across your machines.</title>
+  <desc id="d">Demo terminal output of the tsls command. Fictional machines: mini is offline, macbook and vps-1 report free and total RAM and available and total disk.</desc>
+  <style>
+    .m { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono", monospace; }
+    .ink { fill: #F3ECDD; }
+    .dim { fill: #8C8577; }
+    .faint { fill: #5E594F; }
+    .amber { fill: #F2B33D; }
+    .ok { fill: #93C97E; }
+    .bad { fill: #EF7458; }
+  </style>
+  <rect width="1280" height="640" rx="24" fill="#13120F"/>
+  <rect x="0.5" y="0.5" width="1279" height="639" rx="23.5" fill="none" stroke="#2A2822"/>
+
+  <!-- wordmark -->
+  <text class="m ink" x="68" y="172" font-size="132" font-weight="800" letter-spacing="-4">tsls</text>
+  <rect x="72" y="196" width="56" height="6" fill="#F2B33D"/>
+
+  <!-- subtitle -->
+  <text class="m ink" x="1208" y="118" font-size="34" font-weight="600" text-anchor="end">RAM and disk.</text>
+  <text class="m amber" x="1208" y="164" font-size="34" font-weight="600" text-anchor="end">Across your machines.</text>
+
+  <!-- terminal -->
+  <rect x="72" y="240" width="1136" height="318" rx="14" fill="#1B1A16" stroke="#2E2C26"/>
+  <g class="m">
+    <text x="112" y="294" font-size="24"><tspan class="amber">$</tspan><tspan class="ink" dx="14">tsls</tspan></text>
+    <text class="dim" x="1168" y="292" font-size="16" letter-spacing="1" text-anchor="end">demo output · fictional machines</text>
+
+    <g font-size="15" letter-spacing="1.5" class="dim">
+      <text x="112" y="348">MACHINE</text>
+      <text x="380" y="348">RAM FREE / TOTAL</text>
+      <text x="680" y="348">DISK AVAIL / TOTAL</text>
+      <text x="1000" y="348">STATUS</text>
+    </g>
+    <rect x="112" y="364" width="1056" height="1" fill="#34322B"/>
+
+    <g font-size="24">
+      <!-- mini: offline -->
+      <text class="ink" x="112" y="410">mini</text>
+      <text class="faint" x="450" y="410" text-anchor="end">-</text>
+      <text class="faint" x="750" y="410" text-anchor="end">-</text>
+      <circle cx="1007" cy="402" r="6" fill="#EF7458"/>
+      <text class="bad" x="1024" y="410">offline</text>
+
+      <!-- macbook -->
+      <text class="ink" x="112" y="460">macbook</text>
+      <text class="ink" x="450" y="460" text-anchor="end">9.4</text>
+      <text x="464" y="460"><tspan class="dim">/</tspan><tspan class="ink" dx="12">36</tspan><tspan class="dim" dx="10">GB</tspan></text>
+      <text class="ink" x="750" y="460" text-anchor="end">412</text>
+      <text x="764" y="460"><tspan class="dim">/</tspan><tspan class="ink" dx="12">994</tspan><tspan class="dim" dx="10">GB</tspan></text>
+      <circle cx="1007" cy="452" r="6" fill="#93C97E"/>
+      <text class="ok" x="1024" y="460">ok</text>
+
+      <!-- vps-1 -->
+      <text class="ink" x="112" y="510">vps-1</text>
+      <text class="ink" x="450" y="510" text-anchor="end">2.1</text>
+      <text x="464" y="510"><tspan class="dim">/</tspan><tspan class="ink" dx="12">8</tspan><tspan class="dim" dx="10">GB</tspan></text>
+      <text class="ink" x="750" y="510" text-anchor="end">61</text>
+      <text x="764" y="510"><tspan class="dim">/</tspan><tspan class="ink" dx="12">160</tspan><tspan class="dim" dx="10">GB</tspan></text>
+      <circle cx="1007" cy="502" r="6" fill="#93C97E"/>
+      <text class="ok" x="1024" y="510">ok</text>
+    </g>
+  </g>
+
+  <!-- footer -->
+  <g class="m" font-size="17">
+    <text class="dim" x="72" y="600">agentless <tspan class="faint">·</tspan> over the SSH you already use <tspan class="faint">·</tspan> macOS + Linux <tspan class="faint">·</tspan> <tspan class="ink">tsls --json</tspan> for scripts</text>
+  </g>
+</svg>

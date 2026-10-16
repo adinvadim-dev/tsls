@@ -1,0 +1,15 @@
+__TSLS_OS__
+Darwin
+__TSLS_MEM__
+38654705664
+Mach Virtual Memory Statistics: (page size of 16384 bytes)
+Pages free:                             100000.
+Pages active:                           700000.
+Pages inactive:                         500000.
+Pages speculative:                       20000.
+Pages wired down:                       100000.
+Pages occupied by compressor:           100000.
+__TSLS_DISK__
+Filesystem     1024-blocks     Used Available Capacity Mounted on
+/dev/disk3s5    976490576 500000000 400000000 56% /System/Volumes/Data
+__TSLS_END__

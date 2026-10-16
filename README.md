@@ -44,7 +44,7 @@ This explicitly creates `~/.config/tsls/config.json`, or `$XDG_CONFIG_HOME/tsls/
 }
 ```
 
-Set up and verify SSH access and trusted host keys yourself first. `tsls` respects your SSH aliases and ProxyJump. It enforces `BatchMode=yes` and `StrictHostKeyChecking=yes`, so it neither asks for passwords nor automatically trusts a new key. Passwords and private keys do not belong in this config. Your SSH config remains a trusted executable configuration, including any ProxyCommand you have configured there.
+Set up and verify SSH access and trusted host keys yourself first. `tsls` respects your SSH aliases and ProxyJump. It enforces `BatchMode=yes` and `StrictHostKeyChecking=yes`, so it neither asks for passwords nor automatically trusts a new key. Askpass and graphical display settings are suppressed for SSH descendants too, including ProxyJump subprocesses. Passwords and private keys do not belong in this config. Your SSH config remains a trusted executable configuration, including any ProxyCommand you have configured there.
 
 ## Take a snapshot
 

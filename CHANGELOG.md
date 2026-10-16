@@ -2,6 +2,8 @@
 
 ## 0.1.1
 
+- Suppress SSH credential dialogs throughout ProxyJump subprocesses, including inherited askpass/display settings.
+
 - Classify config initialization write failures as runtime errors; reserve the overwrite warning and usage exit code for existing config files.
 
 ## 0.1.0

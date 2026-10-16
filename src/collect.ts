@@ -60,10 +60,17 @@ export function runProbe(
   return new Promise((resolve, reject) => {
     if (signal.aborted) return reject(new ProbeError("cancelled", "Cancelled"));
     const remote = host.transport === "ssh";
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      SSH_ASKPASS_REQUIRE: "never",
+    };
+    delete env.SSH_ASKPASS;
+    delete env.DISPLAY;
+    delete env.WAYLAND_DISPLAY;
     const child = spawn(
       remote ? "ssh" : "/bin/sh",
       remote ? sshArgs(host.target, timeout) : ["-s"],
-      { stdio: ["pipe", "pipe", "pipe"], detached: true },
+      { stdio: ["pipe", "pipe", "pipe"], detached: true, env },
     );
     let output = "";
     let errors = "";

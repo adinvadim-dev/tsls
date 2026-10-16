@@ -26,6 +26,7 @@ const args=process.argv.slice(2); const target=args.at(-3);
 fs.appendFileSync(process.env.TSLS_TEST_TRACE,JSON.stringify({event:'start',target,time:Date.now(),args})+'\\n');
 process.stdin.resume();
 if(target==='slow') { const c=require('child_process').spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'}); fs.writeFileSync(process.env.TSLS_TEST_CHILD,String(c.pid)); setInterval(()=>{},1000); }
+else if(target==='jump') { const r=require('child_process').spawnSync(process.execPath,['-e',"const e=process.env;process.exit(e.SSH_ASKPASS_REQUIRE==='never'&&!e.SSH_ASKPASS&&!e.DISPLAY&&!e.WAYLAND_DISPLAY?0:7)"],{encoding:'utf8'}); if(r.status===0)process.stdout.write(${JSON.stringify(linux)});else {process.stderr.write('Would have opened credential dialog');process.exitCode=255;} }
 else if(target==='huge') { process.stdout.write('x'.repeat(300000)); }
 else if(target==='key') { process.stderr.write('REMOTE HOST IDENTIFICATION HAS CHANGED SECRET_SENTINEL');process.exitCode=255; }
 else if(target==='keepalive') {process.stderr.write('Timeout, server demo not responding.');process.exitCode=255;}
@@ -116,6 +117,16 @@ test("JSON partial success, offline=null and stderr privacy", () => {
     assert.ok(h.durationMs >= 0);
   }
   assert.doesNotMatch(r.stdout + r.stderr, /SECRET_SENTINEL/);
+});
+test("jump subprocess cannot inherit credential-dialog environment", () => {
+  const r = run(["--config", config(["jump"]), "--json"], {
+    SSH_ASKPASS_REQUIRE: "force",
+    SSH_ASKPASS: "/demo/askpass",
+    DISPLAY: ":99",
+    WAYLAND_DISPLAY: "demo-wayland",
+  });
+  assert.equal(r.status, 0);
+  assert.equal(JSON.parse(r.stdout).hosts[0].status, "ok");
 });
 test("SSH keepalive timeout remains offline in versioned output", () => {
   const r = run(["--config", config(["keepalive"]), "--json"]);

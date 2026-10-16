@@ -75,7 +75,7 @@ export async function resolveAliases(
       return;
     }
     for (const line of text.split("\n")) {
-      const match = line.match(/^\s*(Host|Include)(?:\s+|=)\s*(.+)$/i);
+      const match = line.match(/^\s*(Host|Include)(?:\s*=\s*|\s+)(.+)$/i);
       if (!match?.[1] || !match[2]) continue;
       if (match[1].toLowerCase() === "host") {
         for (const name of tokens(match[2].split("#")[0] ?? "")) {

@@ -474,3 +474,28 @@ test("direct discovery uses Tailscale IP without depending on MagicDNS", () => {
     ["192.0.2.23"],
   );
 });
+
+test("SSH Host and Include accept whitespace around equals separators", () => {
+  for (const separator of [" =", "= ", " = "]) {
+    const f = fixture(status([node("a", "builder")]));
+    mkdirSync(join(f.home, ".ssh/conf.d"));
+    writeFileSync(
+      join(f.home, ".ssh/config"),
+      `Include${separator}conf.d/*.conf\n`,
+    );
+    writeFileSync(
+      join(f.home, ".ssh/conf.d/alias.conf"),
+      `Host${separator}jump-alias\n HostName builder.example\n`,
+    );
+    const { s } = json(f);
+    assert.equal(s.hosts[1].status, "ok");
+    assert.ok(
+      calls(f).some(
+        (c) =>
+          c.event === "start" &&
+          !c.args.includes("-G") &&
+          c.target === "jump-alias",
+      ),
+    );
+  }
+});

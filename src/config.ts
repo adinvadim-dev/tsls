@@ -71,7 +71,7 @@ export function parseConfig(input: unknown): Config {
   return {
     hosts,
     timeout: bounded(input.timeout ?? 5, "timeout", 1, 120),
-    concurrency: bounded(input.concurrency ?? 4, "concurrency", 1, 32),
+    concurrency: bounded(input.concurrency ?? 8, "concurrency", 1, 32),
   };
 }
 export async function loadConfig(

@@ -2,6 +2,7 @@
 
 ## 0.2.0 Unreleased
 
+- Run up to eight probes by default to reduce queue delay without lowering timeouts or coverage; close inherited output pipes on timeout/cancellation.
 - Add configless local/Tailscale snapshots, bounded discovery and SSH alias mapping, optional explicit config and --discover bypass, --strict coverage checks and JSON schema 2 with skipped peers and coverage.
 - Prefer validated Tailscale IPs for direct SSH when MagicDNS is unavailable, while retaining DNS-based SSH alias matching.
 

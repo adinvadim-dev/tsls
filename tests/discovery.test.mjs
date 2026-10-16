@@ -499,3 +499,30 @@ test("SSH Host and Include accept whitespace around equals separators", () => {
     );
   }
 });
+
+test("default eight probes preserve peers and remain bounded", () => {
+  const f = fixture(
+    status(Array.from({ length: 12 }, (_, i) => node("p" + i, "peer" + i))),
+  );
+  const { s } = json(f);
+  assert.equal(s.coverage.limits.concurrency, 8);
+  assert.equal(s.coverage.succeeded, 13);
+  let running = 0,
+    peak = 0;
+  for (const c of calls(f).filter((c) => !c.args?.includes("-G"))) {
+    running += c.event === "start" ? 1 : -1;
+    peak = Math.max(peak, running);
+  }
+  assert.ok(peak > 4 && peak <= 8);
+  assert.equal(running, 0);
+});
+
+test("omitted config concurrency uses eight while explicit config retains precedence", () => {
+  const f = fixture(status());
+  const path = join(f.root, "config.json");
+  const config = { version: 1, hosts: [{ label: "here", transport: "local" }] };
+  writeFileSync(path, JSON.stringify(config));
+  assert.equal(json(f, ["--config", path]).s.coverage.limits.concurrency, 8);
+  writeFileSync(path, JSON.stringify({ ...config, concurrency: 2 }));
+  assert.equal(json(f, ["--config", path]).s.coverage.limits.concurrency, 2);
+});

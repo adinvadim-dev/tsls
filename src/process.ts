@@ -37,6 +37,11 @@ export function execute(options: {
           child.kill("SIGKILL");
         }
       }
+      // A daemonized SSH master can retain pipes after its parent has exited.
+      // Closing our ends keeps timeout/cancellation independent of descendant EOF.
+      child.stdin.destroy();
+      child.stdout.destroy();
+      child.stderr.destroy();
     };
     const cancel = (): void => stop(new ProbeError("cancelled", "Cancelled"));
     const timer = setTimeout(

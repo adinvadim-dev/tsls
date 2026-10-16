@@ -440,3 +440,20 @@ test("intermediate Include glob truncation discloses incomplete mapping", () => 
   assert.equal(s.coverage.complete, false);
   assert.equal(r.status, 1);
 });
+
+test("reserved init names select metrics without writing configuration", () => {
+  assert.equal(labelName("init"), "init-host");
+  for (const input of [
+    status([node("a", "init")]),
+    { ...status(), Self: node("self", "init", "macOS") },
+  ]) {
+    const f = fixture(input);
+    const { s } = json(f);
+    assert.ok(s.hosts.some((h) => h.label === "init-host"));
+    const selected = json(f, ["init-host"]);
+    assert.equal(selected.r.status, 0);
+    assert.equal(selected.s.hosts.length, 1);
+    assert.equal(selected.s.hosts[0].status, "ok");
+    assert.equal(existsSync(join(f.home, ".config")), false);
+  }
+});

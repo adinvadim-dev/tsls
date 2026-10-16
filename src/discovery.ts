@@ -28,12 +28,12 @@ export type Discovery = {
   duplicatesIgnored: number;
 };
 export function labelName(name: string): string {
-  return (
+  const label =
     name
       .replace(/[^a-zA-Z0-9._-]/g, "-")
       .replace(/^[^a-zA-Z0-9]+/, "")
-      .slice(0, 64) || "host"
-  );
+      .slice(0, 64) || "host";
+  return label === "init" ? "init-host" : label;
 }
 const normalized = (name: string): string =>
   name.toLowerCase().replace(/\.$/, "");

@@ -21,7 +21,7 @@ JSON: `{schemaVersion: 2, startedAt, finishedAt, discovery, coverage, hosts}`. D
 
 Each host has label, peerId, tailscaleOs, transport, online, lastSeen, startedAt, finishedAt, durationMs, status, metrics and error. Metadata not supplied by Tailscale is null. Status is `ok`, `offline`, `error` or `skipped`. Success has error:null; failures/skips have metrics:null and error:{code,message}. Codes: timeout, unreachable, host_key, authentication, transport, probe, cancelled, unsupported_os, offline_peer, invalid_target, probe_limit, snapshot_timeout. `skipped` never starts a metrics probe. Alias inspection is local `ssh -G`, not a remote probe. Duplicate physical peers are deduplicated by ID and counted separately.
 
-Metrics: `{os, memory: {total, free, available}, disk: {mount, total, free, available}}`, OS `linux` or `macos`. Each metric is `{bytes: nonnegative integer | null, source: string, quality: "reported" | "unknown"}`. Source describes native counters; source/message text is informational. New object fields may be added within schema version 1. Existing fields, units, null semantics and enum values remain stable. Consumers should tolerate additional fields.
+Metrics: `{os, memory: {total, free, available}, disk: {mount, total, free, available}}`, OS `linux` or `macos`. Each metric is `{bytes: nonnegative integer | null, source: string, quality: "reported" | "unknown"}`. Source describes native counters; source/message text is informational. New object fields may be added within schema version 2. Existing fields, units, null semantics and enum values remain stable. Consumers should tolerate additional fields.
 
 TSV header, in fixed order:
 

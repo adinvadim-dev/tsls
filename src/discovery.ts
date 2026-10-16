@@ -96,6 +96,19 @@ export function parseStatus(input: unknown): {
     seen.add(peer.id);
     peers.push(peer);
   }
+  // A short hostname can name several nodes. Never attach one destination's
+  // readings to multiple peer IDs, including when malformed status repeats DNS/IP.
+  const destinationCounts = new Map<string, number>();
+  for (const peer of [self, ...peers])
+    for (const destination of peer.destinations)
+      destinationCounts.set(
+        destination,
+        (destinationCounts.get(destination) ?? 0) + 1,
+      );
+  for (const peer of [self, ...peers])
+    peer.destinations = peer.destinations.filter(
+      (destination) => destinationCounts.get(destination) === 1,
+    );
   return {
     self,
     peers: peers.sort((a, b) => a.id.localeCompare(b.id)),

@@ -392,3 +392,50 @@ test("Ctrl-C cancels discovery promptly before any SSH", async () => {
   assert.ok(Date.now() - at < 1500);
   assert.deepEqual(calls(f), []);
 });
+
+test("shared short hostnames never map distinct peer IDs to the same SSH alias", () => {
+  const a = { ...node("a", "builder"), DNSName: "builder-a.example" };
+  const b = { ...node("b", "builder"), DNSName: "builder-b.example" };
+  const f = fixture(status([a, b]));
+  writeFileSync(
+    join(f.home, ".ssh/config"),
+    "Host builder\n HostName builder\n",
+  );
+  const { s } = json(f, ["--strict"]);
+  assert.equal(s.coverage.succeeded, 3);
+  assert.deepEqual(
+    calls(f)
+      .filter((c) => c.event === "start" && !c.args.includes("-G"))
+      .map((c) => c.target)
+      .sort(),
+    ["builder-a.example", "builder-b.example"],
+  );
+});
+test("ambiguous sole destinations are skipped instead of duplicating one machine", () => {
+  const f = fixture(
+    status([
+      { ...node("a", "builder"), DNSName: null },
+      { ...node("b", "builder"), DNSName: null },
+    ]),
+  );
+  const { s } = json(f);
+  assert.equal(s.coverage.succeeded, 1);
+  assert.equal(s.coverage.skipped, 2);
+  assert.ok(s.hosts.slice(1).every((h) => h.error.code === "invalid_target"));
+  assert.deepEqual(calls(f), []);
+});
+test("intermediate Include glob truncation discloses incomplete mapping", () => {
+  const f = fixture(status([node("b", "builder")]));
+  const dir = join(f.home, ".ssh/conf.d");
+  mkdirSync(dir);
+  for (let i = 0; i < 17; i++) mkdirSync(join(dir, String(i).padStart(2, "0")));
+  writeFileSync(
+    join(dir, "16/alias.conf"),
+    "Host jump-alias\n HostName builder.example\n",
+  );
+  writeFileSync(join(f.home, ".ssh/config"), "Include conf.d/*/*.conf\n");
+  const { r, s } = json(f, ["--strict"]);
+  assert.equal(s.discovery.aliasesLimited, true);
+  assert.equal(s.coverage.complete, false);
+  assert.equal(r.status, 1);
+});

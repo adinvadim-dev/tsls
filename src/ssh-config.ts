@@ -11,7 +11,10 @@ function tokens(text: string): string[] {
     (match) => match[1] ?? match[2] ?? match[3] ?? "",
   );
 }
-async function expand(path: string): Promise<string[]> {
+async function expand(
+  path: string,
+): Promise<{ paths: string[]; limited: boolean }> {
+  let limited = false;
   const parts = resolve(path).split("/").filter(Boolean);
   let paths = ["/"];
   for (const part of parts) {
@@ -26,17 +29,22 @@ async function expand(path: string): Promise<string[]> {
             .replace(/\?/g, ".")}$`,
         );
         try {
-          for (const name of (await readdir(base)).sort())
+          for (const name of (await readdir(base)).sort()) {
             if (pattern.test(name)) next.push(join(base, name));
+            if (next.length > 16) break;
+          }
         } catch {
           /* Missing optional includes are normal. */
         }
       }
-      if (next.length >= 16) break;
+      if (next.length > 16) {
+        limited = true;
+        break;
+      }
     }
     paths = next.slice(0, 16);
   }
-  return paths;
+  return { paths, limited };
 }
 export async function resolveAliases(
   signal: AbortSignal,
@@ -82,8 +90,9 @@ export async function resolveAliases(
             : isAbsolute(file)
               ? file
               : join(base, file);
-          for (const included of await expand(expanded))
-            await visit(included, base);
+          const matches = await expand(expanded);
+          limited ||= matches.limited;
+          for (const included of matches.paths) await visit(included, base);
         }
       }
     }

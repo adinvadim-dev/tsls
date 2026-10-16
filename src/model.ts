@@ -23,7 +23,12 @@ export type FailureCode =
   | "authentication"
   | "transport"
   | "probe"
-  | "cancelled";
+  | "cancelled"
+  | "unsupported_os"
+  | "offline_peer"
+  | "invalid_target"
+  | "probe_limit"
+  | "snapshot_timeout";
 export type Reading = {
   label: string;
   startedAt: string;
@@ -32,7 +37,7 @@ export type Reading = {
 } & (
   | { status: "ok"; metrics: Metrics; error: null }
   | {
-      status: "offline" | "error";
+      status: "offline" | "error" | "skipped";
       metrics: null;
       error: { code: FailureCode; message: string };
     }

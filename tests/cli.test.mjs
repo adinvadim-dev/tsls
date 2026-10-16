@@ -104,7 +104,7 @@ test("JSON partial success, offline=null and stderr privacy", () => {
   ]);
   assert.equal(r.status, 1);
   const s = JSON.parse(r.stdout);
-  assert.equal(s.schemaVersion, 1);
+  assert.equal(s.schemaVersion, 2);
   assert.equal(s.hosts.length, 4);
   assert.equal(s.hosts[0].status, "ok");
   assert.equal(s.hosts[1].status, "offline");

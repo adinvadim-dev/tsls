@@ -74,7 +74,10 @@ export function parseConfig(input: unknown): Config {
     concurrency: bounded(input.concurrency ?? 4, "concurrency", 1, 32),
   };
 }
-export async function loadConfig(path: string): Promise<Config> {
+export async function loadConfig(
+  path: string,
+  optional = false,
+): Promise<Config | null> {
   if (!isAbsolute(path)) throw new UsageError("Config path must be absolute");
   try {
     const contents = await readFile(path, "utf8");
@@ -83,6 +86,13 @@ export async function loadConfig(path: string): Promise<Config> {
     const input: unknown = JSON.parse(contents);
     return parseConfig(input);
   } catch (error) {
+    if (
+      optional &&
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "ENOENT"
+    )
+      return null;
     if (error instanceof UsageError) throw error;
     if (error instanceof SyntaxError)
       throw new UsageError("Config is not valid JSON");

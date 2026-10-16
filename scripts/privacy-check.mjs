@@ -8,7 +8,7 @@ const files = execFileSync("git", ["ls-files", "--cached", "-z"], {
   .filter(Boolean);
 const forbidden = [
   /tail\d+\.ts\.net/i,
-  /(?:\b(?:\d{1,3}\.){3}\d{1,3}\b)/,
+  /(?<![\d.])(?!(?:192\.0\.2\.|198\.51\.100\.|203\.0\.113\.))(?:\d{1,3}\.){3}\d{1,3}\b/,
   /\/Users\/[a-z]+\//,
   /\b(?:gh[pousr]_[A-Za-z0-9]{20,}|npm_[A-Za-z0-9]{20,}|ops_[A-Za-z0-9_-]{30,})/,
   /-----BEGIN (?:OPENSSH|RSA|EC) PRIVATE KEY-----/,

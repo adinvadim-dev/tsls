@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.1.2 Unreleased
+## 0.2.0 Unreleased
+
+- Add configless local/Tailscale snapshots, bounded discovery and SSH alias mapping, optional explicit config and --discover bypass, --strict coverage checks and JSON schema 2 with skipped peers and coverage.
 
 ## 0.1.1
 

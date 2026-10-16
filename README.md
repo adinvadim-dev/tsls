@@ -8,6 +8,8 @@ Free RAM and available disk across your macOS and Linux machines. One snapshot, 
 
 ## Install
 
+Configless discovery requires version 0.2.0. Check `tsls --version`. An unreleased source checkout does not update npm or your global CLI; use its verified tarball to preview new behavior.
+
 Requires Node.js 22 or newer and OpenSSH on the client. The npm package is **`@adinvadim/tsls`**; the installed command is **`tsls`**. The unrelated unscoped `tsls` npm package is not this project.
 
 ```sh
@@ -21,15 +23,41 @@ pnpm dlx @adinvadim/tsls --help
 bunx @adinvadim/tsls --help
 ```
 
-Only the development build needs TypeScript. Published JavaScript runs on Node; Bun is optional. macOS and Linux clients and hosts are supported. Windows clients are not yet supported. There are no standalone native binaries or Homebrew formula yet. [GitHub Releases](https://github.com/adinvadim-dev/tsls/releases) also provide an npm tarball and SHA256SUMS for offline installation. Use that verified tarball if npm metadata is still propagating immediately after a new release. Verify `shasum -a 256 -c SHA256SUMS` in the download directory, then `npm install -g ./adinvadim-tsls-0.1.1.tgz`. Checksums detect download corruption; they are not a signature from an independent trust root. Installers never silently overwrite an existing unrelated `tsls` command: check `command -v tsls` before installing.
+Only the development build needs TypeScript. Published JavaScript runs on Node; Bun is optional. macOS and Linux clients and hosts are supported. Windows clients are not yet supported. There are no standalone native binaries or Homebrew formula yet. [GitHub Releases](https://github.com/adinvadim-dev/tsls/releases) also provide an npm tarball and SHA256SUMS for offline installation. Use that verified tarball if npm metadata is still propagating immediately after a new release. Verify `shasum -a 256 -c SHA256SUMS` in the download directory, then `npm install -g ./adinvadim-tsls-0.2.0.tgz`. Checksums detect download corruption; they are not a signature from an independent trust root. Installers never silently overwrite an existing unrelated `tsls` command: check `command -v tsls` before installing.
 
-## Configure once
+## First run
 
 ```sh
-tsls init
+tsls
 ```
 
-This explicitly creates `~/.config/tsls/config.json`, or `$XDG_CONFIG_HOME/tsls/config.json`, with a local-only host. It refuses to overwrite an existing file. Edit it to name your own machines. These are fictional SSH aliases:
+No setup is required. Without a tsls config, this reads local metrics and, when available, `tailscale status --json` for the current tailnet. Missing, stopped, inaccessible or invalid Tailscale status keeps a useful local result and explains missing remote coverage on stderr. It never logs in to Tailscale or installs anything remotely. No Tailscale account is needed for local-only use.
+
+Visibility is separate from access. Offline peers, phones and unknown/unsupported operating systems are recorded as skipped without SSH. Online Linux/macOS peers receive bounded read-only SSH probes. A node can still lack a trusted host key, valid Unix login or usable identity. Those failures stay in JSON/TSV and the human summary; no automatic trust, password prompt or browser login is attempted.
+
+```sh
+tsls --json > snapshot.json
+tsls --plain | cut -f1,2,3
+tsls --strict                 # Exit 1 when discovery coverage is incomplete
+tsls --timeout 3 --concurrency 4
+tsls laptop                  # Select a label from discovery or your config
+tsls --help
+```
+
+Human output shows successful readings plus a short reason-count summary in discovery mode. JSON schema 2 includes every discovered node, even consciously skipped nodes, with stable peer IDs, online/last-seen metadata, discovery diagnostics and coverage. Self is local and deduplicated by Tailscale ID. Unknown metrics remain null; failed attempts never become zeros. Labels are sanitized before terminal output. Units in the human table are decimal GB.
+
+## Optional configuration
+
+Your existing explicit config still selects its own host set. To use discovery without deleting or rewriting it:
+
+```sh
+tsls --discover
+tsls --discover --json
+```
+
+`--discover` ignores all tsls config, including `TSLS_CONFIG`, and cannot be combined with `--config`. It still uses your standard OpenSSH configuration. Existing literal SSH aliases from user/system config and Includes are resolved with bounded `ssh -G` calls; a matching effective HostName can map a discovered node to your existing alias/user/identity/ProxyJump. Otherwise the validated node destination is passed to OpenSSH, which owns login/identity defaults. tsls never derives a Unix user from Tailscale ownership or guesses one from the OS. It does not retry with guessed accounts.
+
+For an explicit set, `tsls init` optionally creates `~/.config/tsls/config.json`, or `$XDG_CONFIG_HOME/tsls/config.json`, with only local `laptop`. It never overwrites a file. Creating that file opts into an explicit set for subsequent bare calls. Edit it to add your machines. These are fictional targets:
 
 ```json
 {
@@ -44,24 +72,21 @@ This explicitly creates `~/.config/tsls/config.json`, or `$XDG_CONFIG_HOME/tsls/
 }
 ```
 
-Set up and verify SSH access and trusted host keys yourself first. `tsls` respects your SSH aliases and ProxyJump. It enforces `BatchMode=yes` and `StrictHostKeyChecking=yes`, so it neither asks for passwords nor automatically trusts a new key. Askpass and graphical display settings are suppressed for SSH descendants too, including ProxyJump subprocesses. Passwords and private keys do not belong in this config. Your SSH config remains a trusted executable configuration, including any ProxyCommand you have configured there.
-
-## Take a snapshot
-
 ```sh
-tsls
 tsls laptop buildbox
-tsls --timeout 3 --concurrency 4
-tsls --json > snapshot.json
-tsls --plain | cut -f1,2,3
 tsls --config /absolute/path/to/config.json --json
 TSLS_TIMEOUT=3 tsls dev-vm
-tsls --help
 ```
 
-The default queries only your configured allowlist. The local transport reads the computer running the command. SSH transport executes a fixed read-only shell probe on the remote host; nothing is installed there. Probes run concurrently with a per-host timeout. An offline host stays in the output with unknown metrics while other hosts keep their readings. Exit code 1 signals a partial snapshot.
+Config path precedence: `--config` > `TSLS_CONFIG` > XDG/default file. Only an absent implicit default file enables discovery. Missing explicitly selected files, unreadable files and malformed configs produce usage errors, rather than silently changing the host set. Timing flags > `TSLS_TIMEOUT`/`TSLS_CONCURRENCY` > config > defaults. No project config is trusted. Snapshots never create a config file.
 
-Human output shows RAM **free / total**, disk **available / total**, and `ok`, `offline` or `error`. Units are decimal GB. For reliable parsing use `--json` or `--plain`; human formatting can change. There is currently no ANSI output, so `--no-color`, `NO_COLOR` and `TERM=dumb` are naturally respected.
+Set up and verify SSH trust/access yourself. BatchMode and StrictHostKeyChecking remain enabled. Askpass/display settings are suppressed for SSH descendants including ProxyJump, while the existing agent socket and caller environment are preserved. Your SSH config is trusted executable configuration, including any ProxyCommand/Match exec you have defined. Passwords/private keys do not belong in tsls config.
+
+## Bounds and coverage
+
+At most 32 probes run per snapshot, including local. The whole discovery/mapping/collection phase has a 30-second deadline. Tailscale gets 3 seconds/4 MiB; alias resolution gets 5 seconds with at most 100 literal aliases and 16 SSH config files. Includes support literal paths and `*`/`?` globs. Mapping limits are disclosed; unmatched nodes use OpenSSH destination defaults. Per-host timeout is 1–120 seconds but the remaining global budget always wins. Concurrency is 1–32, default 4. Selecting labels applies the probe cap to the selection, not to an unrelated prefix of the tailnet.
+
+All observed peers remain in machine output; excess eligible nodes are skipped with `probe_limit`, rather than silently dropped. The deadline retains completed readings and marks queued/active probes with `snapshot_timeout`. Unavailable discovery means remote count is unknown/null, not zero. Actual coverage can be partial even when the normal command succeeds. Use JSON `coverage` or `--strict` for automation that requires completeness.
 
 ### What the numbers mean
 
@@ -73,11 +98,11 @@ Disk available is `df -Pk`'s `Available`, converted from 1024-byte blocks. This 
 
 ## Output and failures
 
-JSON has `schemaVersion: 1`, snapshot and per-host ISO timestamps, per-host duration/status, and `metrics` or a structured `error`. Every byte field contains `bytes`, `source` and `quality` (`reported` or `unknown`). Unknown is `null`, never zero. Offline and failed hosts have `metrics: null`. SSH targets, raw stderr and credentials are not echoed into snapshots. `--plain` uses a stable TSV header and empty cells for unknown values. See the [CLI contract](docs/cli.md).
+Version 0.2.0 moves JSON to **schemaVersion 2** because skipped statuses and coverage have new semantics. Byte/source/quality formulas remain unchanged. TSV preserves its column order and empty unknown cells, adding skipped rows/reason codes. Update consumers that assumed the version 1 status/error enums. See the [CLI contract](docs/cli.md) and [discovery rules](docs/discovery.md).
 
-Exit codes: `0` all hosts succeeded; `1` runtime or partial failure; `2` invalid usage/configuration; `130` interrupted. Data goes to stdout; diagnostics go to stderr. Ctrl-C kills active probe process groups and starts no further probes. No retries, background jobs or notifications.
+JSON records snapshot/per-host ISO client timestamps, monotonic durations, metrics or structured errors, peer metadata, discovery source and coverage. Raw SSH stderr, credentials and SSH targets are excluded. No ANSI is emitted; `--no-color`, `NO_COLOR` and `TERM=dumb` are respected.
 
-Configuration precedence is flags, then `TSLS_CONFIG`/`TSLS_TIMEOUT`/`TSLS_CONCURRENCY`, then the selected user config, then defaults. Config paths must be absolute. No repository-local config is loaded. Timeout is 1–120 seconds; concurrency is 1–32; at most 100 configured hosts. Target syntax is an SSH alias or hostname, optionally `user@host`. Ports and IPv6 should use an SSH config alias. No arbitrary remote paths or shell commands are accepted. Shell completion is deferred; `--help` documents the small command surface.
+Exit `0`: local collection succeeded in ordinary discovery, or every explicitly configured/selected host succeeded. Offline/unsupported/inaccessible discovered peers are expected partial coverage. Exit `1`: failed local probe, failed explicit host/selection, or incomplete coverage under `--strict`. Exit `2`: invalid usage/config. Exit `130`: user cancellation. Data goes to stdout, concise diagnostics to stderr. Ctrl-C kills active process groups and suppresses the unfinished snapshot. No watch, retries, background jobs, analytics or notifications.
 
 ## Development
 

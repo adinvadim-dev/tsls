@@ -1,7 +1,7 @@
-import { spawn } from "node:child_process";
 import { performance } from "node:perf_hooks";
 import { type Host, ProbeError, type Reading } from "./model.js";
 import { PROBE, parseProbe } from "./probe.js";
+import { execute } from "./process.js";
 
 export function sshArgs(target: string, timeout: number): string[] {
   return [
@@ -52,85 +52,44 @@ function transportError(stderr: string): ProbeError {
     "SSH failed; check the configured alias with your SSH client",
   );
 }
-export function runProbe(
+export async function runProbe(
   host: Host,
   timeout: number,
   signal: AbortSignal,
 ): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) return reject(new ProbeError("cancelled", "Cancelled"));
-    const remote = host.transport === "ssh";
-    const env: NodeJS.ProcessEnv = {
-      ...process.env,
-      SSH_ASKPASS_REQUIRE: "never",
-    };
-    delete env.SSH_ASKPASS;
-    delete env.DISPLAY;
-    delete env.WAYLAND_DISPLAY;
-    const child = spawn(
-      remote ? "ssh" : "/bin/sh",
-      remote ? sshArgs(host.target, timeout) : ["-s"],
-      { stdio: ["pipe", "pipe", "pipe"], detached: true, env },
-    );
-    let output = "";
-    let errors = "";
-    let size = 0;
-    let failure: ProbeError | null = null;
-    const stop = (error: ProbeError): void => {
-      failure ??= error;
-      if (child.pid) {
-        try {
-          process.kill(-child.pid, "SIGKILL");
-        } catch {
-          child.kill("SIGKILL");
-        }
-      }
-    };
-    const cancel = (): void => stop(new ProbeError("cancelled", "Cancelled"));
-    const timer = setTimeout(
-      () => stop(new ProbeError("timeout", "Probe exceeded the host timeout")),
-      timeout * 1000,
-    );
-    signal.addEventListener("abort", cancel, { once: true });
-    child.stdout.setEncoding("utf8");
-    child.stderr.setEncoding("utf8");
-    const collect = (data: string, stderr: boolean): void => {
-      size += Buffer.byteLength(data);
-      if (size > 262144) {
-        stop(new ProbeError("probe", "Probe output exceeded 256 KiB"));
-        return;
-      }
-      if (stderr) errors += data;
-      else output += data;
-    };
-    child.stdout.on("data", (data: string) => collect(data, false));
-    child.stderr.on("data", (data: string) => collect(data, true));
-    child.stdin.on("error", () => {});
-    child.on("error", () => {
-      failure = new ProbeError(
-        "transport",
-        remote
-          ? "Cannot start system ssh; install OpenSSH"
-          : "Cannot start /bin/sh",
-      );
-    });
-    child.on("close", (code) => {
-      clearTimeout(timer);
-      signal.removeEventListener("abort", cancel);
-      if (failure) reject(failure);
-      else if (code !== 0)
-        reject(
-          remote && code === 255
-            ? transportError(errors)
-            : new ProbeError(
-                "probe",
-                "Native probe failed; supported hosts are macOS and Linux",
-              ),
-        );
-      else resolve(output);
-    });
-    child.stdin.end(PROBE);
+  const remote = host.transport === "ssh";
+  const result = await execute({
+    command: remote ? "ssh" : "/bin/sh",
+    args: remote ? sshArgs(host.target, timeout) : ["-s"],
+    input: PROBE,
+    signal,
+    timeoutMs: timeout * 1000,
+    maxBytes: 262144,
   });
+  if (result.code !== 0)
+    throw remote && result.code === 255
+      ? transportError(result.stderr)
+      : new ProbeError(
+          "probe",
+          "Native probe failed; supported hosts are macOS and Linux",
+        );
+  return result.stdout;
+}
+export function skipped(
+  label: string,
+  code: import("./model.js").FailureCode,
+  message: string,
+): Reading {
+  const at = new Date().toISOString();
+  return {
+    label,
+    startedAt: at,
+    finishedAt: at,
+    durationMs: 0,
+    status: "skipped",
+    metrics: null,
+    error: { code, message },
+  };
 }
 export async function collectHosts(
   hosts: Host[],
@@ -139,10 +98,18 @@ export async function collectHosts(
   const results: Reading[] = [];
   let next = 0;
   async function worker(): Promise<void> {
-    while (next < hosts.length && !options.signal.aborted) {
+    while (next < hosts.length) {
       const index = next++;
       const host = hosts[index];
       if (!host) break;
+      if (options.signal.aborted) {
+        results[index] = skipped(
+          host.label,
+          "snapshot_timeout",
+          "Snapshot deadline reached before this probe",
+        );
+        continue;
+      }
       const startedAt = new Date().toISOString();
       const start = performance.now();
       try {

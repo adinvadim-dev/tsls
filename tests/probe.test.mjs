@@ -94,7 +94,7 @@ test("config defaults and safe SSH aliases", () =>
   assert.deepEqual(parseConfig(valid), {
     hosts: valid.hosts,
     timeout: 5,
-    concurrency: 4,
+    concurrency: 8,
   }));
 for (const target of [
   "-oProxyCommand=bad",

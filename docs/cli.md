@@ -10,7 +10,7 @@
 | `--strict` | boolean / false | require complete coverage, including skipped peers and available discovery/mapping |
 | `--config` | absolute path | TSLS_CONFIG, then XDG/default file; absent implicit default enables discovery |
 | `--timeout` | integer / 5 | per-host seconds, 1–120; TSLS_TIMEOUT; remaining global budget wins |
-| `--concurrency` | integer / 4 | simultaneous probes, 1–32; TSLS_CONCURRENCY |
+| `--concurrency` | integer / 8 | simultaneous probes, 1–32; TSLS_CONCURRENCY |
 | `--json` | boolean / false | JSON schemaVersion 2 |
 | `--plain` | boolean / false | TSV, no ANSI, header even on partial failure |
 | `--no-color` | boolean | no ANSI; currently all output is uncolored |

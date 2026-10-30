@@ -84,7 +84,7 @@ Set up and verify SSH trust/access yourself. BatchMode and StrictHostKeyChecking
 
 ## Bounds and coverage
 
-At most 32 probes run per snapshot, including local. The whole discovery/mapping/collection phase has a 30-second deadline. Tailscale gets 3 seconds/4 MiB; alias resolution gets 5 seconds with at most 100 literal aliases and 16 SSH config files. Includes support literal paths and `*`/`?` globs. Mapping limits are disclosed; unmatched nodes use OpenSSH destination defaults. Per-host timeout is 1–120 seconds but the remaining global budget always wins. Concurrency is 1–32, default 4. Selecting labels applies the probe cap to the selection, not to an unrelated prefix of the tailnet.
+At most 32 probes run per snapshot, including local. The whole discovery/mapping/collection phase has a 30-second deadline. Tailscale gets 3 seconds/4 MiB; alias resolution gets 5 seconds with at most 100 literal aliases and 16 SSH config files. Includes support literal paths and `*`/`?` globs. Mapping limits are disclosed; unmatched nodes use OpenSSH destination defaults. Per-host timeout is 1–120 seconds but the remaining global budget always wins. Concurrency is 1–32, default 8. Existing explicit config/env/flag values still win. Selecting labels applies the probe cap to the selection, not to an unrelated prefix of the tailnet.
 
 All observed peers remain in machine output; excess eligible nodes are skipped with `probe_limit`, rather than silently dropped. The deadline retains completed readings and marks queued/active probes with `snapshot_timeout`. Unavailable discovery means remote count is unknown/null, not zero. Actual coverage can be partial even when the normal command succeeds. Use JSON `coverage` or `--strict` for automation that requires completeness.
 
@@ -102,7 +102,7 @@ Version 0.2.0 moves JSON to **schemaVersion 2** because skipped statuses and cov
 
 JSON records snapshot/per-host ISO client timestamps, monotonic durations, metrics or structured errors, peer metadata, discovery source and coverage. Raw SSH stderr, credentials and SSH targets are excluded. No ANSI is emitted; `--no-color`, `NO_COLOR` and `TERM=dumb` are respected.
 
-Exit `0`: local collection succeeded in ordinary discovery, or every explicitly configured/selected host succeeded. Offline/unsupported/inaccessible discovered peers are expected partial coverage. Exit `1`: failed local probe, failed explicit host/selection, or incomplete coverage under `--strict`. Exit `2`: invalid usage/config. Exit `130`: user cancellation. Data goes to stdout, concise diagnostics to stderr. Ctrl-C kills active process groups and suppresses the unfinished snapshot. No watch, retries, background jobs, analytics or notifications.
+Exit `0`: local collection succeeded in ordinary discovery, or every explicitly configured/selected host succeeded. Offline/unsupported/inaccessible discovered peers are expected partial coverage. Exit `1`: failed local probe, failed explicit host/selection, or incomplete coverage under `--strict`. Exit `2`: invalid usage/config. Exit `130`: user cancellation. Data goes to stdout, concise diagnostics to stderr. Timeout/cancellation closes inherited pipes even if an SSH master retains them. Ctrl-C kills active process groups and suppresses the unfinished snapshot. No watch, retries, background jobs, analytics or notifications.
 
 ## Development
 

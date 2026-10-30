@@ -31,6 +31,8 @@ label status ram_free_bytes ram_available_bytes ram_total_bytes disk_available_b
 
 Separators are literal tabs, with a newline after each row. Unknown cells are empty. Labels cannot contain control characters. No mount paths or free-form diagnostics enter TSV.
 
+Human output shows RAM free/total, RAM available, disk available/total and status. A legend explains decimal GB versus binary GiB and `-` for unknown. Successful macOS readings include a note that free RAM excludes reclaimable memory and available RAM is unknown. These explanatory lines are human-only; JSON and TSV contracts are unchanged.
+
 Local/remote metric probes use LC_ALL=C, bounded 256 KiB stdout+stderr and a fixed read-only program. SSH uses one connection attempt, strict host checking, batch mode, disabled askpass/display and no TTY. Alias scanning is bounded; standard OpenSSH owns effective identity/login, including ProxyJump. Host labels are ASCII-sanitized and disambiguated before output. Discovered raw names and stderr cannot inject terminal controls.
 
 Ordinary discovery returns 0 if local succeeds, despite expected unavailable peers; complete=false exposes partial coverage. Explicit sets/positional selection require all selected rows to succeed. --strict additionally requires complete discovery/mapping. Invalid config/usage exits2; required coverage failure exits1; Ctrl-C/SIGTERM exits130 and suppresses the unfinished snapshot. On deadline, completed observations survive, active probes fail and queued probes are skipped. Client-clock timestamps bracket collection; values are not simultaneous.

@@ -1,0 +1,1 @@
+- Show available RAM separately from free RAM in human output, explain unknown macOS available memory and decimal GB versus GiB, and preserve JSON/TSV values and contracts.

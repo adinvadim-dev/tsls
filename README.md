@@ -44,7 +44,7 @@ tsls laptop                  # Select a label from discovery or your config
 tsls --help
 ```
 
-Human output shows successful readings plus a short reason-count summary in discovery mode. JSON schema 2 includes every discovered node, even consciously skipped nodes, with stable peer IDs, online/last-seen metadata, discovery diagnostics and coverage. Self is local and deduplicated by Tailscale ID. Unknown metrics remain null; failed attempts never become zeros. Labels are sanitized before terminal output. Units in the human table are decimal GB.
+Human output shows free/total RAM, a separate RAM available column, available/total disk, and a short reason-count summary in discovery mode. Linux RAM available includes reclaimable memory; macOS RAM available is unknown (`-`), and a note explains that low RAM free alone does not describe capacity available to applications. JSON schema 2 includes every discovered node, even consciously skipped nodes, with stable peer IDs, online/last-seen metadata, discovery diagnostics and coverage. Self is local and deduplicated by Tailscale ID. Unknown metrics remain null; failed attempts never become zeros. Labels are sanitized before terminal output. Units in the human table are decimal GB (1,000,000,000 bytes), not GiB (1,073,741,824 bytes); for example, 48 GiB appears as 51.5 GB. The table includes a units legend.
 
 ## Optional configuration
 

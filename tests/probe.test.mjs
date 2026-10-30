@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { sshArgs } from "../dist/collect.js";
 import { parseConfig } from "../dist/config.js";
-import { humanBytes, renderPlain } from "../dist/output.js";
+import { humanBytes, renderHuman, renderPlain } from "../dist/output.js";
 import { parseProbe } from "../dist/probe.js";
 
 const linux = readFileSync(
@@ -35,6 +35,26 @@ test("Intel page size is read too", () =>
     parseProbe(macos.replace("16384 bytes", "4096 bytes")).memory.free.bytes,
     409600000,
   ));
+test("human readings distinguish free RAM from available RAM and explain units", () => {
+  const output = renderHuman([
+    { label: "linux", status: "ok", metrics: parseProbe(linux) },
+    { label: "mac", status: "ok", metrics: parseProbe(macos) },
+    { label: "failed", status: "error", metrics: null },
+  ]);
+  const [header, linuxRow, macRow, failedRow] = output.split("\n");
+  assert.match(header, /RAM AVAIL/);
+  assert.match(linuxRow, /1\.1 GB \/ 8\.6 GB\s+4\.3 GB/);
+  assert.match(macRow, /1\.6 GB \/ 38\.7 GB\s+-\s+409\.6 GB/);
+  assert.match(failedRow, /^failed\s+-\s+-\s+-\s+error$/);
+  assert.match(output, /GB = 1,000,000,000 bytes/);
+  assert.match(output, /macOS.*RAM FREE.*reclaimable/);
+});
+test("Linux-only human output omits macOS-specific explanation", () => {
+  const output = renderHuman([
+    { label: "linux", status: "ok", metrics: parseProbe(linux) },
+  ]);
+  assert.doesNotMatch(output, /macOS/);
+});
 test("missing Linux MemAvailable is unknown", () =>
   assert.equal(
     parseProbe(linux.replace(/^MemAvailable:.*\n/m, "")).memory.available.bytes,

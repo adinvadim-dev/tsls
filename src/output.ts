@@ -6,21 +6,35 @@ export function humanBytes(value: number | null): string {
 }
 export function renderHuman(hosts: Reading[]): string {
   const rows = [
-    ["MACHINE", "RAM FREE / TOTAL", "DISK AVAIL / TOTAL", "STATUS"],
+    [
+      "MACHINE",
+      "RAM FREE / TOTAL",
+      "RAM AVAIL",
+      "DISK AVAIL / TOTAL",
+      "STATUS",
+    ],
     ...hosts.map((host) => [
       host.label,
       host.metrics
         ? `${humanBytes(host.metrics.memory.free.bytes)} / ${humanBytes(host.metrics.memory.total.bytes)}`
         : "-",
+      humanBytes(host.metrics?.memory.available.bytes ?? null),
       host.metrics
         ? `${humanBytes(host.metrics.disk.available.bytes)} / ${humanBytes(host.metrics.disk.total.bytes)}`
         : "-",
       host.status,
     ]),
   ];
-  const widths = [0, 1, 2].map((column) =>
+  const widths = [0, 1, 2, 3].map((column) =>
     Math.max(...rows.map((row) => row[column]?.length ?? 0)),
   );
+  const notes = [
+    "GB = 1,000,000,000 bytes (1 GiB = 1,073,741,824 bytes). - = unknown.",
+  ];
+  if (hosts.some((host) => host.metrics?.os === "macos"))
+    notes.push(
+      "macOS: RAM FREE excludes reclaimable memory; RAM AVAIL is unknown (no native MemAvailable counter).",
+    );
   return `${rows
     .map((row) =>
       row
@@ -28,7 +42,7 @@ export function renderHuman(hosts: Reading[]): string {
         .join("  ")
         .trimEnd(),
     )
-    .join("\n")}\n`;
+    .join("\n")}\n${notes.join("\n")}\n`;
 }
 export function renderPlain(hosts: Reading[]): string {
   const rows = [

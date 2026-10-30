@@ -148,10 +148,15 @@ test("plain is stable TSV and NO_COLOR is respected", () => {
   );
   assert.ok(!r.stdout.includes(String.fromCharCode(27)));
 });
-test("human output states RAM free and disk available", () => {
+test("human output uses GiB for RAM and GB for disk", () => {
   const r = run(["--config", config(["ok"])]);
+  assert.equal(r.status, 0);
   assert.match(r.stdout, /RAM FREE \/ TOTAL/);
+  assert.match(r.stdout, /RAM AVAIL/);
+  assert.match(r.stdout, /1\.0 GiB \/ 8\.0 GiB\s+4\.0 GiB/);
   assert.match(r.stdout, /DISK AVAIL \/ TOTAL/);
+  assert.match(r.stdout, /RAM: GiB = 1,073,741,824 bytes/);
+  assert.match(r.stdout, /Disk: GB = 1,000,000,000 bytes/);
 });
 test("timeout bounds offline host and reaps process group", () => {
   const start = Date.now();

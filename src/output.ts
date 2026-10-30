@@ -1,26 +1,44 @@
 import type { Reading } from "./model.js";
 
-export function humanBytes(value: number | null): string {
+export function humanBytes(
+  value: number | null,
+  unit: "GB" | "GiB" = "GB",
+): string {
   if (value === null) return "-";
-  return `${(value / 1_000_000_000).toFixed(1)} GB`;
+  const divisor = unit === "GiB" ? 1_073_741_824 : 1_000_000_000;
+  return `${(value / divisor).toFixed(1)} ${unit}`;
 }
 export function renderHuman(hosts: Reading[]): string {
   const rows = [
-    ["MACHINE", "RAM FREE / TOTAL", "DISK AVAIL / TOTAL", "STATUS"],
+    [
+      "MACHINE",
+      "RAM FREE / TOTAL",
+      "RAM AVAIL",
+      "DISK AVAIL / TOTAL",
+      "STATUS",
+    ],
     ...hosts.map((host) => [
       host.label,
       host.metrics
-        ? `${humanBytes(host.metrics.memory.free.bytes)} / ${humanBytes(host.metrics.memory.total.bytes)}`
+        ? `${humanBytes(host.metrics.memory.free.bytes, "GiB")} / ${humanBytes(host.metrics.memory.total.bytes, "GiB")}`
         : "-",
+      humanBytes(host.metrics?.memory.available.bytes ?? null, "GiB"),
       host.metrics
         ? `${humanBytes(host.metrics.disk.available.bytes)} / ${humanBytes(host.metrics.disk.total.bytes)}`
         : "-",
       host.status,
     ]),
   ];
-  const widths = [0, 1, 2].map((column) =>
+  const widths = [0, 1, 2, 3].map((column) =>
     Math.max(...rows.map((row) => row[column]?.length ?? 0)),
   );
+  const notes = [
+    "RAM: GiB = 1,073,741,824 bytes. Disk: GB = 1,000,000,000 bytes. - = unknown.",
+  ];
+  if (hosts.some((host) => host.metrics?.os === "macos"))
+    notes.push(
+      "macOS: RAM FREE excludes reclaimable memory; RAM AVAIL is unknown (no native MemAvailable counter).",
+    );
   return `${rows
     .map((row) =>
       row
@@ -28,7 +46,7 @@ export function renderHuman(hosts: Reading[]): string {
         .join("  ")
         .trimEnd(),
     )
-    .join("\n")}\n`;
+    .join("\n")}\n${notes.join("\n")}\n`;
 }
 export function renderPlain(hosts: Reading[]): string {
   const rows = [

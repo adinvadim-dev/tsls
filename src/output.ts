@@ -1,8 +1,12 @@
 import type { Reading } from "./model.js";
 
-export function humanBytes(value: number | null): string {
+export function humanBytes(
+  value: number | null,
+  unit: "GB" | "GiB" = "GB",
+): string {
   if (value === null) return "-";
-  return `${(value / 1_000_000_000).toFixed(1)} GB`;
+  const divisor = unit === "GiB" ? 1_073_741_824 : 1_000_000_000;
+  return `${(value / divisor).toFixed(1)} ${unit}`;
 }
 export function renderHuman(hosts: Reading[]): string {
   const rows = [
@@ -16,9 +20,9 @@ export function renderHuman(hosts: Reading[]): string {
     ...hosts.map((host) => [
       host.label,
       host.metrics
-        ? `${humanBytes(host.metrics.memory.free.bytes)} / ${humanBytes(host.metrics.memory.total.bytes)}`
+        ? `${humanBytes(host.metrics.memory.free.bytes, "GiB")} / ${humanBytes(host.metrics.memory.total.bytes, "GiB")}`
         : "-",
-      humanBytes(host.metrics?.memory.available.bytes ?? null),
+      humanBytes(host.metrics?.memory.available.bytes ?? null, "GiB"),
       host.metrics
         ? `${humanBytes(host.metrics.disk.available.bytes)} / ${humanBytes(host.metrics.disk.total.bytes)}`
         : "-",
@@ -29,7 +33,7 @@ export function renderHuman(hosts: Reading[]): string {
     Math.max(...rows.map((row) => row[column]?.length ?? 0)),
   );
   const notes = [
-    "GB = 1,000,000,000 bytes (1 GiB = 1,073,741,824 bytes). - = unknown.",
+    "RAM: GiB = 1,073,741,824 bytes. Disk: GB = 1,000,000,000 bytes. - = unknown.",
   ];
   if (hosts.some((host) => host.metrics?.os === "macos"))
     notes.push(

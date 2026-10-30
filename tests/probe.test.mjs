@@ -43,10 +43,11 @@ test("human readings distinguish free RAM from available RAM and explain units",
   ]);
   const [header, linuxRow, macRow, failedRow] = output.split("\n");
   assert.match(header, /RAM AVAIL/);
-  assert.match(linuxRow, /1\.1 GB \/ 8\.6 GB\s+4\.3 GB/);
-  assert.match(macRow, /1\.6 GB \/ 38\.7 GB\s+-\s+409\.6 GB/);
+  assert.match(linuxRow, /1\.0 GiB \/ 8\.0 GiB\s+4\.0 GiB/);
+  assert.match(macRow, /1\.5 GiB \/ 36\.0 GiB\s+-\s+409\.6 GB/);
   assert.match(failedRow, /^failed\s+-\s+-\s+-\s+error$/);
-  assert.match(output, /GB = 1,000,000,000 bytes/);
+  assert.match(output, /RAM: GiB = 1,073,741,824 bytes/);
+  assert.match(output, /Disk: GB = 1,000,000,000 bytes/);
   assert.match(output, /macOS.*RAM FREE.*reclaimable/);
 });
 test("Linux-only human output omits macOS-specific explanation", () => {
